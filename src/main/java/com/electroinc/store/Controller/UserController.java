@@ -1,11 +1,15 @@
 package com.electroinc.store.Controller;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,14 +17,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.electroinc.store.Dto.ApiResponseMessage;
+import com.electroinc.store.Dto.ImageResponse;
+import com.electroinc.store.Dto.PageableResponse;
 import com.electroinc.store.Dto.UserDto;
+import com.electroinc.store.service.FileService;
 import com.electroinc.store.service.UserService;
 
-import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 @RestController
@@ -29,6 +37,12 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private FileService fileService;
+
+    @Value("${user.profile.image.path}")
+    private String ImageUploadPath;
 
     // create user
     @PostMapping("/create")
@@ -57,8 +71,12 @@ public class UserController {
 
     // Get All User
     @GetMapping
-    public ResponseEntity<List<UserDto>> GetAllUser() {
-        List<UserDto> getAllUser = userService.GetAllUser();
+    public ResponseEntity<PageableResponse<UserDto>> GetAllUser(
+            @RequestParam(value = "pagenumber", defaultValue = "0", required = false) int pagenumber,
+            @RequestParam(value = "pagesize", defaultValue = "10", required = false) int pagesize,
+            @RequestParam(value = "sortBy", defaultValue = "name", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
+        PageableResponse<UserDto> getAllUser = userService.GetAllUser(pagenumber, pagesize, sortBy, sortDir);
         return new ResponseEntity<>(getAllUser, HttpStatus.OK);
     }
 
@@ -81,4 +99,28 @@ public class UserController {
         return new ResponseEntity<>(searchUserName, HttpStatus.OK);
     }
 
+    // upload File
+    @PostMapping("/image/{userId}")
+    public ResponseEntity<ImageResponse> UploadUserImage(@RequestParam("imageName") MultipartFile image,
+            @PathVariable String userId) {
+
+        String uploadImage = fileService.UploadImage(image, ImageUploadPath);
+        UserDto user = userService.GetSingelUser(userId);
+        user.setImageName(uploadImage);
+        userService.UpdateUser(user, userId);
+        ImageResponse imageResponse = ImageResponse.builder().Message("image is uploaded").imageName(uploadImage)
+                .status(HttpStatus.CREATED).sucess(true).build();
+
+        return new ResponseEntity<>(imageResponse, HttpStatus.CREATED);
+    }
+
+    // serve image
+    @GetMapping("/image/{userId}")
+    public void serveUserImage(@PathVariable String userId, HttpServletResponse response) throws IOException {
+        UserDto user = userService.GetSingelUser(userId);
+        InputStream resource = fileService.getResource(ImageUploadPath, user.getImageName());
+        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+        StreamUtils.copy(resource, response.getOutputStream());
+
+    }
 }

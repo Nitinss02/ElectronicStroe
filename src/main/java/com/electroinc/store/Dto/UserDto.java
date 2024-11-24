@@ -31,4 +31,7 @@ public class UserDto {
     private String password;
     @Size(min = 4, max = 6, message = "Gender is invalid")
     private String Gender;
+
+    @NotBlank(message = "Image is requried")
+    private String imageName;
 }

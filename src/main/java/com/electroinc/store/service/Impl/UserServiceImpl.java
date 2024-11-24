@@ -1,14 +1,26 @@
 package com.electroinc.store.service.Impl;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.electroinc.store.Dto.PageableResponse;
 import com.electroinc.store.Dto.UserDto;
 import com.electroinc.store.Entity.User;
+import com.electroinc.store.Exception.ResourceNotFound;
+import com.electroinc.store.Helper.helper;
 import com.electroinc.store.Repository.UserRepository;
 import com.electroinc.store.service.UserService;
 
@@ -20,6 +32,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ModelMapper mapper;
+
+    @Value("${user.profile.image.path}")
+    private String ImagePath;
 
     @Override
     public UserDto CreateUser(UserDto userDto) {
@@ -36,11 +51,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto UpdateUser(UserDto userDto, String UserId) {
         User user = userRepository.findById(UserId)
-                .orElseThrow(() -> new RuntimeException("User is not Found by Given Id " + UserId));
+                .orElseThrow(() -> new ResourceNotFound("User is not Found by Given Id " + UserId));
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
         user.setGender(userDto.getGender());
         user.setPassword(userDto.getPassword());
+        user.setImageName(userDto.getImageName());
 
         User newuser = userRepository.save(user);
         UserDto NewUserDto = EntityToDto(newuser);
@@ -50,22 +66,33 @@ public class UserServiceImpl implements UserService {
     @Override
     public void DeleteUser(String UserId) {
         User user = userRepository.findById(UserId)
-                .orElseThrow(() -> new RuntimeException("User is not Found by Given Id"));
+                .orElseThrow(() -> new ResourceNotFound("User is not Found by Given Id"));
+        String fullpath = ImagePath + user.getImageName();
+
+        try {
+            Path path = Paths.get(fullpath);
+            Files.delete(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         userRepository.delete(user);
 
     }
 
     @Override
-    public List<UserDto> GetAllUser() {
-        List<User> users = userRepository.findAll();
-        List<UserDto> alluser = users.stream().map(user -> EntityToDto(user)).collect(Collectors.toList());
-        return alluser;
+    public PageableResponse<UserDto> GetAllUser(int pagenumber, int pagesize, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(pagenumber, pagesize, sort);
+        Page<User> page = userRepository.findAll(pageable);
+        PageableResponse<UserDto> response = helper.getPageableResponse(page, UserDto.class);
+        return response;
     }
 
     @Override
     public UserDto GetSingelUser(String UserId) {
         User user = userRepository.findById(UserId)
-                .orElseThrow(() -> new RuntimeException("User is not Found by Given Id"));
+                .orElseThrow(() -> new ResourceNotFound("User is not Found by Given Id"));
         UserDto userDto = EntityToDto(user);
         return userDto;
     }
@@ -91,7 +118,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto GetUserFromEmail(String Email) {
         User userEmail = userRepository.findByEmail(Email)
-                .orElseThrow(() -> new RuntimeException("User is not found by Email"));
+                .orElseThrow(() -> new ResourceNotFound("User is not found by Email"));
         return EntityToDto(userEmail);
     }
 
