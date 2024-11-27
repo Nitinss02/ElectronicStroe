@@ -8,9 +8,10 @@ import com.electroinc.store.Dto.ApiResponseMessage;
 import com.electroinc.store.Dto.CategoryDto;
 import com.electroinc.store.Dto.ImageResponse;
 import com.electroinc.store.Dto.PageableResponse;
-import com.electroinc.store.Dto.UserDto;
+import com.electroinc.store.Dto.ProductDto;
 import com.electroinc.store.service.CategoryService;
 import com.electroinc.store.service.FileService;
+import com.electroinc.store.service.ProductService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -42,6 +43,9 @@ public class CategoryController {
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private ProductService productService;
 
     @Value("${Category.image.path}")
     private String ImageUploadPath;
@@ -102,7 +106,6 @@ public class CategoryController {
 
         String uploadImage = fileService.UploadImage(image, ImageUploadPath);
         CategoryDto category = categoryService.GetSingleCategory(categoryId);
-
         category.setCoverImage(uploadImage);
         categoryService.UpadateCategory(category, categoryId);
         ImageResponse imageResponse = ImageResponse.builder().Message("image is uploaded").imageName(uploadImage)
@@ -120,6 +123,35 @@ public class CategoryController {
         response.setContentType(MediaType.IMAGE_JPEG_VALUE);
         StreamUtils.copy(resource, response.getOutputStream());
 
+    }
+
+    @PostMapping("/{categoryId}/product")
+    public ResponseEntity<ProductDto> CreateProductWithCategory(@PathVariable String categoryId,
+            @RequestBody ProductDto productDto) {
+        ProductDto productwithCategory = productService.createWithCategory(productDto, categoryId);
+        return new ResponseEntity<>(productwithCategory, HttpStatus.CREATED);
+    }
+
+    @PutMapping("{categoryId}/product/{productId}")
+    public ResponseEntity<ProductDto> UpdateCategorywithProduct(@PathVariable String productId,
+            @PathVariable String categoryId) {
+        // TODO: process PUT request
+
+        ProductDto updatedCategory = productService.UpdateCategorywithProduct(categoryId, productId);
+        return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
+    }
+
+    @GetMapping("{categoryId}/products")
+    public ResponseEntity<PageableResponse<ProductDto>> GetProductofCategory(
+            @PathVariable String categoryId,
+            @RequestParam(value = "pagenumber", defaultValue = "0", required = false) int pagenumber,
+            @RequestParam(value = "pagesize", defaultValue = "10", required = false) int pagesize,
+            @RequestParam(value = "sortBy", defaultValue = "productTitle", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
+        PageableResponse<ProductDto> getAllCategory = productService.GetAllCategory(categoryId, pagenumber, pagesize,
+                sortBy,
+                sortDir);
+        return new ResponseEntity<>(getAllCategory, HttpStatus.OK);
     }
 
 }

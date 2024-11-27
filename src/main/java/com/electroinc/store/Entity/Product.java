@@ -3,7 +3,10 @@ package com.electroinc.store.Entity;
 import java.util.Date;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,4 +31,9 @@ public class Product {
     private Date addedDate;
     private boolean live;
     private boolean stock;
+    private String productImage;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "Category_Id")
+    private Category category;
 }
