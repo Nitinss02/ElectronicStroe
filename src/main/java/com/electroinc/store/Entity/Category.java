@@ -1,6 +1,6 @@
 package com.electroinc.store.Entity;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -10,7 +10,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,7 +19,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+
 public class Category {
     @Id
     private String categoryId;
@@ -31,5 +30,5 @@ public class Category {
     private String coverImage;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Product> product = new ArrayList<>();
+    private List<Product> product = new LinkedList<>();
 }
