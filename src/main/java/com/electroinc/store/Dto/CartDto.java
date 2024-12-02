@@ -8,6 +8,7 @@ import java.util.List;
 import com.electroinc.store.Entity.CartItem;
 import com.electroinc.store.Entity.User;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,6 +22,7 @@ import lombok.Setter;
 @Builder
 
 public class CartDto {
+
     private String cartId;
     private Date createdAt;
     private User user;
