@@ -7,6 +7,7 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -25,6 +26,7 @@ public class Cart {
     private String cartId;
     private Date createdAt;
     @OneToOne
+    @JoinColumn(name = "userId")
     private User user;
 
     @OneToMany(mappedBy = "cart", orphanRemoval = true, cascade = CascadeType.ALL)

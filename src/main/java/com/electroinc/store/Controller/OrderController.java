@@ -29,13 +29,13 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderDto> CreateOrder(@RequestBody CreateOrderDto orderDto) {
-        OrderDto createOrder = orderService.CreateOrder(orderDto);
+        OrderDto createOrder = orderService.createOrder(orderDto);
         return new ResponseEntity<>(createOrder, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{orderId}")
     public ResponseEntity<ApiResponseMessage> DeleteOrder(@PathVariable String orderId) {
-        orderService.RemoveOrder(orderId);
+        orderService.removeOrder(orderId);
         return new ResponseEntity<>(
                 ApiResponseMessage.builder().Message("Order is Removed").status(HttpStatus.OK).sucess(true).build(),
                 HttpStatus.OK);
@@ -43,7 +43,7 @@ public class OrderController {
 
     @GetMapping("/{userId}")
     public ResponseEntity<List<OrderDto>> GetOrderByUser(@PathVariable String userId) {
-        List<OrderDto> UserOrder = orderService.GetUserOrder(userId);
+        List<OrderDto> UserOrder = orderService.getUserOrder(userId);
         return new ResponseEntity<>(UserOrder, HttpStatus.OK);
     }
 

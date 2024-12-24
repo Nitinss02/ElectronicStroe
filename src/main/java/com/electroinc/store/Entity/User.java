@@ -22,7 +22,7 @@ import lombok.Setter;
 @Entity
 public class User {
     @Id
-    private String UserId;
+    private String userId;
     private String name;
     private String email;
     private String password;
@@ -30,5 +30,5 @@ public class User {
     private String imageName;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, mappedBy = "user")
-    private List<Order> orders = new ArrayList<>();
+    private List<Orders> orders = new ArrayList<>();
 }

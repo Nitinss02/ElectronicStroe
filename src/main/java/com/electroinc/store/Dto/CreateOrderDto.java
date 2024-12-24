@@ -16,13 +16,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class CreateOrderDto {
-    private String OrderId;
+    private String cartId;
     private String userId;
 
     private String orderStatus = "PENDING";
     private String paymentStatus = "NOTPAID";
     private String billingAddress;
-    private String billingName;
+    private String billingNames;
     private int billingPhone;
 
 }

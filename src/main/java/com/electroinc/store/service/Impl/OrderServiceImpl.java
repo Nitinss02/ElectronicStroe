@@ -19,7 +19,7 @@ import com.electroinc.store.Dto.OrderDto;
 import com.electroinc.store.Dto.PageableResponse;
 import com.electroinc.store.Entity.Cart;
 import com.electroinc.store.Entity.CartItem;
-import com.electroinc.store.Entity.Order;
+import com.electroinc.store.Entity.Orders;
 import com.electroinc.store.Entity.OrderItem;
 import com.electroinc.store.Entity.User;
 import com.electroinc.store.Exception.BadApiRequest;
@@ -46,10 +46,10 @@ public class OrderServiceImpl implements OrderService {
     private CartRepository cartRepository;
 
     @Override
-    public OrderDto CreateOrder(CreateOrderDto orderDto) {
+    public OrderDto createOrder(CreateOrderDto orderDto) {
 
         String userId = orderDto.getUserId();
-        String cartId = orderDto.getOrderId();
+        String cartId = orderDto.getCartId();
         // fetch the user
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFound("User id is Invalid"));
         Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new ResourceNotFound("cart id is Invalid"));
@@ -57,7 +57,7 @@ public class OrderServiceImpl implements OrderService {
         if (cartItem.size() <= 0) {
             throw new BadApiRequest("Invalid number of Item");
         }
-        Order order = Order.builder().billingName(orderDto.getBillingName())
+        Orders order = Orders.builder().billingNames(orderDto.getBillingNames())
                 .billingAddress(orderDto.getBillingAddress())
                 .billingPhone(orderDto.getBillingPhone())
                 .orderedDate(new Date())
@@ -89,23 +89,23 @@ public class OrderServiceImpl implements OrderService {
 
         cart.getItem().clear();
         cartRepository.save(cart);
-        Order savedOrder = orderRepository.save(order);
+        Orders savedOrder = orderRepository.save(order);
 
         return mapper.map(savedOrder, OrderDto.class);
     }
 
     @Override
-    public void RemoveOrder(String OrderId) {
-        Order order = orderRepository.findById(OrderId)
+    public void removeOrder(String OrderId) {
+        Orders order = orderRepository.findById(OrderId)
                 .orElseThrow(() -> new ResourceNotFound("Order Id is not Found"));
         orderRepository.delete(order);
 
     }
 
     @Override
-    public List<OrderDto> GetUserOrder(String userId) {
+    public List<OrderDto> getUserOrder(String userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFound("User is not found"));
-        List<Order> orders = orderRepository.findByUser(user);
+        List<Orders> orders = orderRepository.findByUser(user);
         List<OrderDto> orderDto = orders.stream().map(order -> mapper.map(order, OrderDto.class))
                 .collect(Collectors.toList());
         return orderDto;
@@ -117,7 +117,7 @@ public class OrderServiceImpl implements OrderService {
         Sort sort = (sortDir.equalsIgnoreCase("desc")) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
 
-        Page<Order> orderPage = orderRepository.findAll(pageable);
+        Page<Orders> orderPage = orderRepository.findAll(pageable);
 
         return helper.getPageableResponse(orderPage, OrderDto.class);
 

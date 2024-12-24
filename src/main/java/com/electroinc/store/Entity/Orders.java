@@ -27,7 +27,7 @@ import lombok.Setter;
 @Builder
 @Entity
 
-public class Order {
+public class Orders {
     @Id
     @Column(name = "order_id")
     private String orderId;
@@ -37,7 +37,7 @@ public class Order {
     @Column(length = 1000)
     private String billingAddress;
     @Column(nullable = false)
-    private String billingName;
+    private String billingNames;
     private int billingPhone;
     private Date orderedDate;
     private Date deliveredDate;

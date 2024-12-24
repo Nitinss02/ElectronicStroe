@@ -7,11 +7,11 @@ import com.electroinc.store.Dto.OrderDto;
 import com.electroinc.store.Dto.PageableResponse;
 
 public interface OrderService {
-    public OrderDto CreateOrder(CreateOrderDto orderDto);
+    public OrderDto createOrder(CreateOrderDto orderDto);
 
-    void RemoveOrder(String OrderId);
+    void removeOrder(String OrderId);
 
-    List<OrderDto> GetUserOrder(String userId);
+    List<OrderDto> getUserOrder(String userId);
 
     PageableResponse<OrderDto> getAllOrders(int pageNumber, int pageSize, String sortBy, String sortDir);
 }
