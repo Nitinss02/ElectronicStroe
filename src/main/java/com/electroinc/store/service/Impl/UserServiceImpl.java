@@ -18,9 +18,11 @@ import org.springframework.stereotype.Service;
 
 import com.electroinc.store.Dto.PageableResponse;
 import com.electroinc.store.Dto.UserDto;
+import com.electroinc.store.Entity.Role;
 import com.electroinc.store.Entity.User;
 import com.electroinc.store.Exception.ResourceNotFound;
 import com.electroinc.store.Helper.helper;
+import com.electroinc.store.Repository.RoleRepository;
 import com.electroinc.store.Repository.UserRepository;
 import com.electroinc.store.service.UserService;
 
@@ -36,12 +38,21 @@ public class UserServiceImpl implements UserService {
     @Value("${user.profile.image.path}")
     private String ImagePath;
 
+    @Value("${normal.role}")
+    private String normalRole;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
     @Override
     public UserDto CreateUser(UserDto userDto) {
 
         String UserId = UUID.randomUUID().toString();
         userDto.setUserId(UserId);
         User newUser = DtoToEntity(userDto);
+        Role role = roleRepository.findById(normalRole).get();
+        newUser.getRoles().add(role);
+
         User savedUser = userRepository.save(newUser);
         UserDto NewDto = EntityToDto(savedUser);
 

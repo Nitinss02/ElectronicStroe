@@ -1,5 +1,8 @@
 package com.electroinc.store.Dto;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -31,4 +34,6 @@ public class UserDto {
 
     @NotBlank(message = "Image is requried")
     private String imageName;
+
+    private Set<RoleDto> roles = new HashSet<>();
 }
